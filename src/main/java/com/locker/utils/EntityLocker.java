@@ -43,15 +43,18 @@ public final class EntityLocker {
       }
       LOGGER.info("Released ID: " + id);
 
-      // execution of protected code on the same entities
-      protectedTask.run();
-      LOCK.unlock();
-    } else {
       try {
-        LOCKED_IDS.add(id);
-        LOGGER.info("Locked new ID: " + id);
+        // execution of protected code on the same entities
+        protectedTask.run();
+      } finally {
         LOCK.unlock();
+      }
+    } else {
+      LOCKED_IDS.add(id);
+      LOGGER.info("Locked new ID: " + id);
+      LOCK.unlock();
 
+      try {
         // concurrent execution of protected code on different entities
         protectedTask.run();
       } finally {
